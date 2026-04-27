@@ -1,0 +1,31 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: cgad-platform
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 20MB
+
+
+langchain4j:
+  provider: dashscope
+  dashscope:
+    api-key: ${DASHSCOPE_API_KEY:your-dashscope-api-key-here}
+    model-name: qwen-plus
+    temperature: 0.1
+    max-tokens: 4096
+  open-ai:
+    api-key: ${OPENAI_API_KEY:your-openai-api-key-here}
+    model-name: gpt-4o
+    base-url: ${OPENAI_BASE_URL:https://api.openai.com/v1}
+    temperature: 0.1
+    max-tokens: 4096
+
+app:
+  upload:
+    dir: ${java.io.tmpdir}/cgad-uploads
+  export:
+    dir: ${java.io.tmpdir}/cgad-exports
