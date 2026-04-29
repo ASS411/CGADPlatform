@@ -4,6 +4,9 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
+    <!--
+      Spring Boot Parent POM：
+    -->
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
@@ -11,6 +14,7 @@
         <relativePath/>
     </parent>
 
+    <!-- 项目坐标：唯一标识这个项目 -->
     <groupId>com.cgad</groupId>
     <artifactId>cgad-platform</artifactId>
     <version>1.0.0-SNAPSHOT</version>
@@ -21,8 +25,15 @@
         <java.version>17</java.version>
         <langchain4j.version>1.0.0-beta1</langchain4j.version>
         <langchain4j-community.version>1.0.0-beta1</langchain4j-community.version>
+        <pgvector.version>0.1.6</pgvector.version>
     </properties>
 
+    <!--
+        BOM（Bill of Materials）依赖管理：
+        - BOM 是一个特殊的 POM，只包含版本号声明
+        - 引入 BOM 后，子依赖不需要指定版本号，由 BOM 统一管理
+        - 好处：确保一组依赖的版本互相兼容
+    -->
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -43,9 +54,23 @@
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
 
+        <!--
+            LangChain4j 核心库：提供 ChatLanguageModel 等统一接口
+            版本由 BOM 管理，不需要手动指定
+        -->
         <dependency>
             <groupId>dev.langchain4j</groupId>
             <artifactId>langchain4j</artifactId>
@@ -63,27 +88,61 @@
         </dependency>
 
         <dependency>
+            <groupId>dev.langchain4j</groupId>
+            <artifactId>langchain4j-pgvector</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>dev.langchain4j</groupId>
+            <artifactId>langchain4j-embeddings</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>dev.langchain4j</groupId>
+            <artifactId>langchain4j-embeddings-all-minilm-l6-v2</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.pgvector</groupId>
+            <artifactId>pgvector</artifactId>
+            <version>${pgvector.version}</version>
+        </dependency>
+
+        <!-- Apache POI：Java 操作 Excel 文件的标准库 -->
+        <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi-ooxml</artifactId>
             <version>5.2.5</version>
         </dependency>
 
+        <!-- Jackson：JSON 序列化/反序列化 -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
         </dependency>
 
+        <!-- Jackson Java 8 日期时间模块：支持 LocalDate/LocalDateTime 等 -->
         <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-jsr310</artifactId>
         </dependency>
 
+        <!--
+            Lombok
+        -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <optional>true</optional>
         </dependency>
 
+        <!-- Spring Boot 测试 Starter：JUnit + Mockito + Spring Test -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>

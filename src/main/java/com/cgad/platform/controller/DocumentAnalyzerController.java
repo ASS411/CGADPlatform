@@ -17,6 +17,9 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
+/**
+ * 智能文档分析控制器
+ */
 @Slf4j
 @RestController
 @RequestMapping("/api/document")
@@ -31,6 +34,13 @@ public class DocumentAnalyzerController {
         this.excelExporter = excelExporter;
     }
 
+    /**
+     * 文档分析接口
+     * 请求示例：
+     *   POST /api/document/analyze
+     *   Content-Type: application/json
+     *   { "content": "合同内容...", "documentType": "合同" }
+     */
     @PostMapping("/analyze")
     public ApiResponse<DocumentAnalysisResult> analyzeDocument(
             @Valid @RequestBody DocumentAnalysisRequest request) {
@@ -39,12 +49,16 @@ public class DocumentAnalyzerController {
         return ApiResponse.success(result);
     }
 
+    /**
+     * 文件上传分析接口
+     */
     @PostMapping("/analyze/file")
     public ApiResponse<DocumentAnalysisResult> analyzeFile(
             @RequestParam("file") MultipartFile file,
             @RequestParam(value = "documentType", required = false) String documentType) throws IOException {
         log.info("Received file analysis request, filename: {}", file.getOriginalFilename());
 
+        // 将上传文件的内容转为 UTF-8 字符串
         String content = new String(file.getBytes(), StandardCharsets.UTF_8);
 
         DocumentAnalysisRequest request = new DocumentAnalysisRequest();
@@ -55,12 +69,27 @@ public class DocumentAnalyzerController {
         return ApiResponse.success(result);
     }
 
+    /**
+     * 分析并导出 Excel 接口
+     *
+     * ResponseEntity：Spring 的 HTTP 响应封装，可精细控制：
+     *   - 响应状态码
+     *   - 响应头（如 Content-Disposition 控制文件下载）
+     *   - 响应体（文件内容）
+     *
+     * 文件下载的关键响应头：
+     *   - Content-Disposition: attachment; filename="xxx.xlsx" —— 告诉浏览器下载而非显示
+     *   - Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+     *     —— Excel 文件的 MIME 类型
+     */
     @PostMapping("/analyze/export-excel")
     public ResponseEntity<Resource> analyzeAndExportExcel(
             @Valid @RequestBody DocumentAnalysisRequest request) throws IOException {
         log.info("Received document analysis with Excel export request");
 
+        // 先分析文档，获取结构化结果
         DocumentAnalysisResult result = documentAnalyzerService.analyzeDocument(request);
+        // 将结果导出为 Excel 文件
         Resource excelResource = excelExporter.exportAnalysisResult(result);
 
         return ResponseEntity.ok()
