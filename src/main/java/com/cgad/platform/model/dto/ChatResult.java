@@ -19,4 +19,6 @@ public class ChatResult {
 
     /** 本轮对话消耗的 token 数（估算） */
     private int tokensUsed;
+
+    private String sesssionId;
 }

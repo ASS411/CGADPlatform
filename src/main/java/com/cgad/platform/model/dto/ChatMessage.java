@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 /**
  * 聊天消息 DTO
  *
- * 【知识点】聊天消息的角色分类：
+ * 聊天消息的角色分类：
  *   - user：用户发送的消息
  *   - assistant：AI 助手的回复
  *   - system：系统指令（设定 AI 的行为）

@@ -5,6 +5,7 @@ import com.cgad.platform.model.dto.DocumentAnalysisResult;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.langchain4j.model.chat.ChatLanguageModel;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 /**
@@ -33,12 +34,25 @@ public class DocumentAnalyzerService {
      */
     private final ObjectMapper objectMapper;
 
+    private final ChatHistoryService chatHistoryService;
+
+    @Value("${langchain4j.provider:dashscope}")
+    private String provider;
+
+    @Value("${langchain4j.dashscope.model-name:qwen-plus}")
+    private String dashscopeModelName;
+
+    @Value("${langchain4j.deepseek.model-name:deepseek-chat}")
+    private String deepseekModelName;
+
     /**
      * 构造器注入
      */
-    public DocumentAnalyzerService(ChatLanguageModel chatModel, ObjectMapper objectMapper) {
+    public DocumentAnalyzerService(ChatLanguageModel chatModel, ObjectMapper objectMapper,
+                                    ChatHistoryService chatHistoryService) {
         this.chatModel = chatModel;
         this.objectMapper = objectMapper;
+        this.chatHistoryService = chatHistoryService;
     }
 
     /**
@@ -63,7 +77,12 @@ public class DocumentAnalyzerService {
         String rawResponse = chatModel.chat(prompt);
         log.debug("Raw model response: {}", rawResponse);
 
-        // 第三步：解析结构化输出
+        int promptTokens = (int) (prompt.length() * 0.7);
+        int completionTokens = (int) (rawResponse.length() * 0.7);
+        String modelName = "deepseek".equalsIgnoreCase(provider) ? deepseekModelName : dashscopeModelName;
+        chatHistoryService.recordTokenUsage(provider, modelName, "document_analysis",
+                promptTokens, completionTokens, null);
+
         return parseStructuredOutput(rawResponse);
     }
 

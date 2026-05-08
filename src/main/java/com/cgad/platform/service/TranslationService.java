@@ -5,6 +5,7 @@ import com.cgad.platform.model.dto.TranslationResult;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.langchain4j.model.chat.ChatLanguageModel;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 /**
@@ -31,10 +32,22 @@ public class TranslationService {
 
     private final ChatLanguageModel chatModel;
     private final ObjectMapper objectMapper;
+    private final ChatHistoryService chatHistoryService;
 
-    public TranslationService(ChatLanguageModel chatModel, ObjectMapper objectMapper) {
+    @Value("${langchain4j.provider:dashscope}")
+    private String provider;
+
+    @Value("${langchain4j.dashscope.model-name:qwen-plus}")
+    private String dashscopeModelName;
+
+    @Value("${langchain4j.deepseek.model-name:deepseek-chat}")
+    private String deepseekModelName;
+
+    public TranslationService(ChatLanguageModel chatModel, ObjectMapper objectMapper,
+                               ChatHistoryService chatHistoryService) {
         this.chatModel = chatModel;
         this.objectMapper = objectMapper;
+        this.chatHistoryService = chatHistoryService;
     }
 
     /**
@@ -52,6 +65,13 @@ public class TranslationService {
 
         String rawResponse = chatModel.chat(prompt);
         log.debug("Raw model response: {}", rawResponse);
+
+        int promptTokens = (int) (prompt.length() * 0.7);
+        int completionTokens = (int) (rawResponse.length() * 0.7);
+        String modelName = "deepseek".equalsIgnoreCase(provider) ? deepseekModelName : dashscopeModelName;
+        String operationType = request.isPolish() ? "translation_polish" : "translation";
+        chatHistoryService.recordTokenUsage(provider, modelName, operationType,
+                promptTokens, completionTokens, null);
 
         return parseTranslationResult(rawResponse, request);
     }

@@ -68,7 +68,7 @@
         </dependency>
 
         <!--
-            LangChain4j 核心库：提供 ChatLanguageModel 等统一接口
+            LangChain4j 核心库：提供统一接口
             版本由 BOM 管理，不需要手动指定
         -->
         <dependency>
@@ -155,14 +155,17 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>3.2.5</version>
                 <configuration>
-                    <excludes>
-                        <exclude>
-                            <groupId>org.projectlombok</groupId>
-                            <artifactId>lombok</artifactId>
-                        </exclude>
-                    </excludes>
+                    <mainClass>com.cgad.platform.CGADPlatformApplication</mainClass>
                 </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

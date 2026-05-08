@@ -9,6 +9,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -79,20 +80,48 @@ public class StructuredExtractionService {
 
     private final DocumentSummaryExtractor summaryExtractor;
     private final SentimentAnalyzer sentimentAnalyzer;
+    private final ChatHistoryService chatHistoryService;
 
-    public StructuredExtractionService(dev.langchain4j.model.chat.ChatLanguageModel chatModel) {
+    @Value("${langchain4j.provider:dashscope}")
+    private String provider;
+
+    @Value("${langchain4j.dashscope.model-name:qwen-plus}")
+    private String dashscopeModelName;
+
+    @Value("${langchain4j.deepseek.model-name:deepseek-chat}")
+    private String deepseekModelName;
+
+    public StructuredExtractionService(dev.langchain4j.model.chat.ChatLanguageModel chatModel,
+                                        ChatHistoryService chatHistoryService) {
         this.summaryExtractor = AiServices.create(DocumentSummaryExtractor.class, chatModel);
         this.sentimentAnalyzer = AiServices.create(SentimentAnalyzer.class, chatModel);
+        this.chatHistoryService = chatHistoryService;
         log.info("StructuredExtractionService initialized with AiServices");
     }
 
     public DocumentSummary extractSummary(String content) {
         log.info("Extracting structured summary, content length: {}", content.length());
-        return summaryExtractor.extract(content);
+        DocumentSummary result = summaryExtractor.extract(content);
+
+        int promptTokens = (int) (content.length() * 0.7);
+        int completionTokens = (int) ((result.getSummary() != null ? result.getSummary().length() : 0) * 0.7);
+        String modelName = "deepseek".equalsIgnoreCase(provider) ? deepseekModelName : dashscopeModelName;
+        chatHistoryService.recordTokenUsage(provider, modelName, "structured_extraction",
+                promptTokens, completionTokens, null);
+
+        return result;
     }
 
     public SentimentResult analyzeSentiment(String content) {
         log.info("Analyzing sentiment, content length: {}", content.length());
-        return sentimentAnalyzer.analyze(content);
+        SentimentResult result = sentimentAnalyzer.analyze(content);
+
+        int promptTokens = (int) (content.length() * 0.7);
+        int completionTokens = (int) ((result.getBriefAnalysis() != null ? result.getBriefAnalysis().length() : 0) * 0.7);
+        String modelName = "deepseek".equalsIgnoreCase(provider) ? deepseekModelName : dashscopeModelName;
+        chatHistoryService.recordTokenUsage(provider, modelName, "sentiment_analysis",
+                promptTokens, completionTokens, null);
+
+        return result;
     }
 }

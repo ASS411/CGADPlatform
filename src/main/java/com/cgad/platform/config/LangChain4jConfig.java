@@ -42,30 +42,30 @@ public class LangChain4jConfig {
     @Value("${langchain4j.dashscope.max-tokens:4096}")
     private int dashscopeMaxTokens;
 
-    @Value("${langchain4j.open-ai.api-key}")
-    private String openAiApiKey;
+    @Value("${langchain4j.deepseek.api-key}")
+    private String deepseekApiKey;
 
-    @Value("${langchain4j.open-ai.model-name:gpt-4o}")
-    private String openAiModelName;
+    @Value("${langchain4j.deepseek.model-name:deepseek-chat}")
+    private String deepseekModelName;
 
-    @Value("${langchain4j.open-ai.base-url:https://api.openai.com/v1}")
-    private String openAiBaseUrl;
+    @Value("${langchain4j.deepseek.base-url:https://api.deepseek.com/v1}")
+    private String deepseekBaseUrl;
 
-    @Value("${langchain4j.open-ai.temperature:0.1}")
-    private double openAiTemperature;
+    @Value("${langchain4j.deepseek.temperature:0.1}")
+    private double deepseekTemperature;
 
-    @Value("${langchain4j.open-ai.max-tokens:4096}")
-    private int openAiMaxTokens;
+    @Value("${langchain4j.deepseek.max-tokens:4096}")
+    private int deepseekMaxTokens;
 
     @Bean
     public ChatLanguageModel chatLanguageModel() {
-        if ("openai".equalsIgnoreCase(provider)) {
+        if ("deepseek".equalsIgnoreCase(provider)) {
             return OpenAiChatModel.builder()
-                    .apiKey(openAiApiKey)
-                    .modelName(openAiModelName)
-                    .baseUrl(openAiBaseUrl)
-                    .temperature(openAiTemperature)
-                    .maxTokens(openAiMaxTokens)
+                    .apiKey(deepseekApiKey)
+                    .modelName(deepseekModelName)
+                    .baseUrl(deepseekBaseUrl)
+                    .temperature(deepseekTemperature)
+                    .maxTokens(deepseekMaxTokens)
                     .build();
         }
         return QwenChatModel.builder()
@@ -86,13 +86,13 @@ public class LangChain4jConfig {
      */
     @Bean
     public StreamingChatLanguageModel streamingChatLanguageModel() {
-        if ("openai".equalsIgnoreCase(provider)) {
+        if ("deepseek".equalsIgnoreCase(provider)) {
             return OpenAiStreamingChatModel.builder()
-                    .apiKey(openAiApiKey)
-                    .modelName(openAiModelName)
-                    .baseUrl(openAiBaseUrl)
-                    .temperature(openAiTemperature)
-                    .maxTokens(openAiMaxTokens)
+                    .apiKey(deepseekApiKey)
+                    .modelName(deepseekModelName)
+                    .baseUrl(deepseekBaseUrl)
+                    .temperature(deepseekTemperature)
+                    .maxTokens(deepseekMaxTokens)
                     .build();
         }
         return QwenStreamingChatModel.builder()

@@ -67,26 +67,37 @@
         </el-form-item>
 
         <el-form-item label="输入文本">
-          <el-input
-            v-model="form.text"
-            type="textarea"
-            :rows="8"
-            placeholder="请输入待翻译或润色的文本..."
-          />
+          <div class="textarea-wrapper">
+            <el-input
+              v-model="form.text"
+              type="textarea"
+              :rows="8"
+              placeholder="请输入待翻译或润色的文本..."
+              resize="none"
+            />
+            <div class="textarea-actions">
+              <el-button text size="small" @click="handleSwap">
+                <el-icon><Sort /></el-icon>
+                交换语言
+              </el-button>
+              <el-button text size="small" @click="handleClear">
+                <el-icon><Delete /></el-icon>
+                清空
+              </el-button>
+            </div>
+          </div>
         </el-form-item>
 
         <el-form-item>
-          <el-button type="primary" :loading="loading" @click="handleSubmit">
+          <el-button
+            type="primary"
+            size="large"
+            :loading="loading"
+            @click="handleSubmit"
+            style="width: 200px"
+          >
             <el-icon><MagicStick /></el-icon>
             {{ form.mode === 'translate' ? '开始翻译' : '开始润色' }}
-          </el-button>
-          <el-button @click="handleSwap">
-            <el-icon><Sort /></el-icon>
-            交换语言
-          </el-button>
-          <el-button @click="handleClear">
-            <el-icon><Delete /></el-icon>
-            清空
           </el-button>
         </el-form-item>
       </el-form>
@@ -215,11 +226,17 @@ async function handleCopy() {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-  max-width: 960px;
 }
 
 .translation-page :deep(.el-card) {
   border: 1px solid #f0f0f0;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  transition: box-shadow var(--transition-normal);
+}
+
+.translation-page :deep(.el-card:hover) {
+  box-shadow: var(--shadow-md);
 }
 
 .card-header {
@@ -239,12 +256,18 @@ async function handleCopy() {
 
 .result-container {
   display: flex;
-  align-items: flex-start;
-  gap: 1rem;
+  align-items: stretch;
+  gap: 1.25rem;
+  position: relative;
 }
 
 .result-block {
   flex: 1;
+  transition: transform var(--transition-normal);
+}
+
+.result-block:hover {
+  transform: translateY(-2px);
 }
 
 .result-label {
@@ -253,28 +276,46 @@ async function handleCopy() {
 
 .result-text {
   line-height: 1.8;
-  padding: 1rem;
-  border-radius: 8px;
+  padding: 1.25rem;
+  border-radius: var(--radius-sm);
   min-height: 80px;
+  transition: all var(--transition-fast);
+  position: relative;
 }
 
 .result-text.original {
-  background: #f8fafc;
+  background: linear-gradient(135deg, #f8fafc, #f1f5f9);
   color: #606266;
-  border-left: 3px solid #909399;
+  border-left: 3px solid #94a3b8;
+}
+
+.result-text.original:hover {
+  background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
 }
 
 .result-text.translated {
-  background: #f0fdf4;
+  background: linear-gradient(135deg, #f0fdf4, #ecfdf5);
   color: #303133;
   font-weight: 500;
-  border-left: 3px solid #10b981;
+  border-left: 3px solid var(--success-color);
+}
+
+.result-text.translated:hover {
+  background: linear-gradient(135deg, #ecfdf5, #d1fae5);
 }
 
 .result-arrow {
   display: flex;
   align-items: center;
+  justify-content: center;
   padding-top: 2rem;
+  color: var(--primary-color);
+  animation: arrowPulse 2s ease-in-out infinite;
+}
+
+@keyframes arrowPulse {
+  0%, 100% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.1); opacity: 1; }
 }
 
 .result-actions {
@@ -283,12 +324,56 @@ async function handleCopy() {
   justify-content: flex-end;
 }
 
+.result-actions .el-button {
+  transition: all var(--transition-fast);
+}
+
+.result-actions .el-button:hover {
+  transform: translateY(-1px);
+}
+
 .glossary-section {
-  margin-top: 1rem;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px dashed #e5e7eb;
 }
 
 .glossary-tag {
-  margin: 0.25rem;
+  margin: 0.3rem;
+  transition: transform var(--transition-fast);
+}
+
+.glossary-tag:hover {
+  transform: scale(1.05);
+}
+
+.textarea-wrapper {
+  position: relative;
+}
+
+.textarea-wrapper :deep(.el-textarea__inner) {
+  border-radius: var(--radius-md);
+  resize: none;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.textarea-wrapper :deep(.el-textarea__inner:focus) {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.textarea-actions {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  display: flex;
+  gap: 4px;
+  opacity: 0.6;
+  transition: opacity var(--transition-fast);
+}
+
+.textarea-wrapper:hover .textarea-actions {
+  opacity: 1;
 }
 
 .result-meta {
@@ -306,6 +391,10 @@ async function handleCopy() {
   .result-arrow {
     justify-content: center;
     transform: rotate(90deg);
+    padding-top: 0;
+  }
+  .result-block:hover {
+    transform: translateY(-1px);
   }
 }
 </style>

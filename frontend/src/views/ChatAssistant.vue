@@ -84,25 +84,34 @@
         </div>
 
         <div class="chat-input-area">
-          <el-input
-            v-model="inputText"
-            type="textarea"
-            :rows="2"
-            placeholder="输入你的问题..."
-            resize="none"
-            @keydown.enter.exact.prevent="handleSend"
-          />
+          <div class="input-wrapper">
+            <el-input
+              v-model="inputText"
+              type="textarea"
+              :rows="2"
+              placeholder="输入你的问题..."
+              resize="none"
+              @keydown.enter.exact.prevent="handleSend"
+            />
+            <el-button
+              class="send-btn"
+              type="primary"
+              circle
+              :loading="loading"
+              @click="handleSend"
+              :disabled="!inputText.trim()"
+            >
+              <el-icon><Promotion /></el-icon>
+            </el-button>
+          </div>
           <div class="input-actions">
             <span class="token-info" v-if="totalTokens > 0">
+              <el-icon><Coin /></el-icon>
               Token 消耗：约 {{ totalTokens }}
             </span>
-            <el-button type="primary" :loading="loading" @click="handleSend" :disabled="!inputText.trim()">
-              <el-icon><Promotion /></el-icon>
-              发送
-            </el-button>
-            <el-button @click="handleClear">
+            <el-button text size="small" @click="handleClear">
               <el-icon><Delete /></el-icon>
-              清空
+              清空对话
             </el-button>
           </div>
         </div>
@@ -114,7 +123,7 @@
 <script setup>
 import { ref, nextTick } from 'vue'
 import { ElMessage } from 'element-plus'
-import { ChatLineSquare, Promotion, Delete } from '@element-plus/icons-vue'
+import { ChatLineSquare, Promotion, Delete, Coin } from '@element-plus/icons-vue'
 import { chat } from '../api'
 import { marked } from 'marked'
 import hljs from 'highlight.js'
@@ -337,11 +346,13 @@ function scrollToBottom() {
 .chat-assistant {
   display: flex;
   flex-direction: column;
-  max-width: 960px;
+  height: 100%;
 }
 
 .chat-assistant :deep(.el-card) {
   border: 1px solid #f0f0f0;
+  border-radius: var(--radius-md);
+  overflow: hidden;
 }
 
 .card-header {
@@ -369,7 +380,7 @@ function scrollToBottom() {
 .chat-container {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 300px);
+  height: calc(100vh - 200px);
   min-height: 500px;
 }
 
@@ -379,7 +390,7 @@ function scrollToBottom() {
   padding: 1rem 0;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.25rem;
 }
 
 .welcome-section {
@@ -389,16 +400,29 @@ function scrollToBottom() {
   justify-content: center;
   padding: 3rem 1rem;
   text-align: center;
+  animation: fadeInUp 0.5s ease;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .welcome-icon {
-  font-size: 3rem;
-  margin-bottom: 1rem;
+  font-size: 3.5rem;
+  margin-bottom: 1.2rem;
+  animation: bounce 2s ease-in-out infinite;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
 }
 
 .welcome-section h3 {
   color: #1a1a2e;
   margin-bottom: 0.5rem;
+  font-size: 1.1rem;
 }
 
 .welcome-section p {
@@ -409,14 +433,29 @@ function scrollToBottom() {
 .quick-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: 0.75rem;
   justify-content: center;
+}
+
+.quick-actions .el-button {
+  transition: all var(--transition-fast);
+}
+
+.quick-actions .el-button:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
 }
 
 .message-item {
   display: flex;
   gap: 0.75rem;
   max-width: 85%;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .message-item.user {
@@ -438,10 +477,16 @@ function scrollToBottom() {
   font-size: 1.2rem;
   flex-shrink: 0;
   background: #f8fafc;
+  transition: transform var(--transition-fast);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.message-avatar:hover {
+  transform: scale(1.1);
 }
 
 .message-item.user .message-avatar {
-  background: #eef2ff;
+  background: linear-gradient(135deg, #eef2ff, #c7d2fe);
 }
 
 .message-content {
@@ -456,10 +501,13 @@ function scrollToBottom() {
   display: flex;
   align-items: center;
   gap: 6px;
+  margin-bottom: 4px;
+  font-weight: 500;
 }
 
 .message-item.user .message-role {
   text-align: right;
+  justify-content: flex-end;
 }
 
 .rag-badge {
@@ -467,7 +515,7 @@ function scrollToBottom() {
 }
 
 .streaming-badge {
-  color: #10b981;
+  color: var(--success-color);
   font-size: 0.7rem;
   animation: pulse 1.5s infinite;
 }
@@ -478,27 +526,33 @@ function scrollToBottom() {
 }
 
 .message-text {
-  padding: 0.75rem 1rem;
-  border-radius: 12px;
+  padding: 0.85rem 1.1rem;
+  border-radius: 14px;
   line-height: 1.7;
   font-size: 0.95rem;
+  word-break: break-word;
+  position: relative;
 }
 
 .message-item.user .message-text {
-  background: #6366f1;
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
   color: white;
-  border-bottom-right-radius: 4px;
+  border-bottom-right-radius: 6px;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.2);
 }
 
 .message-item.assistant .message-text {
-  background: #f8fafc;
+  background: white;
   color: #303133;
-  border-bottom-left-radius: 4px;
+  border-bottom-left-radius: 6px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  border: 1px solid #f0f0f0;
 }
 
 .markdown-body :deep(h1), .markdown-body :deep(h2), .markdown-body :deep(h3) {
   margin: 0.8em 0 0.4em;
   color: #1a1a2e;
+  font-weight: 600;
 }
 
 .markdown-body :deep(h1) { font-size: 1.3em; }
@@ -515,38 +569,42 @@ function scrollToBottom() {
 }
 
 .markdown-body :deep(code) {
-  background: rgba(0, 0, 0, 0.06);
+  background: rgba(99, 102, 241, 0.08);
   padding: 0.15em 0.4em;
   border-radius: 4px;
   font-size: 0.88em;
-  font-family: 'Fira Code', monospace;
+  font-family: 'Fira Code', 'Consolas', 'Monaco', monospace;
+  color: var(--primary-color);
 }
 
 .message-item.user .markdown-body :deep(code) {
   background: rgba(255, 255, 255, 0.2);
+  color: white;
 }
 
 .markdown-body :deep(pre) {
-  background: #1e1e2e;
+  background: linear-gradient(135deg, #1e1e2e, #2a2a3e);
   color: #cdd6f4;
-  padding: 1em;
-  border-radius: 8px;
+  padding: 1.2em;
+  border-radius: var(--radius-sm);
   overflow-x: auto;
   margin: 0.8em 0;
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .markdown-body :deep(pre code) {
   background: none;
   padding: 0;
   font-size: 0.85em;
+  color: inherit;
 }
 
 .markdown-body :deep(blockquote) {
-  border-left: 3px solid #6366f1;
+  border-left: 3px solid var(--primary-color);
   padding: 0.5em 1em;
   margin: 0.5em 0;
   background: rgba(99, 102, 241, 0.05);
-  border-radius: 0 6px 6px 0;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
 }
 
 .markdown-body :deep(table) {
@@ -566,17 +624,33 @@ function scrollToBottom() {
   font-weight: 600;
 }
 
+.markdown-body :deep(a) {
+  color: var(--primary-color);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color var(--transition-fast);
+}
+
+.markdown-body :deep(a:hover) {
+  border-bottom-color: var(--primary-color);
+}
+
 .typing {
   display: flex;
-  gap: 0.3rem;
+  gap: 0.4rem;
   padding: 1rem;
+  background: white;
+  border-radius: 14px;
+  border-bottom-left-radius: 6px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  border: 1px solid #f0f0f0;
 }
 
 .typing .dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #c0c4cc;
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
   animation: typing 1.4s infinite both;
 }
 
@@ -590,22 +664,67 @@ function scrollToBottom() {
 
 .chat-input-area {
   border-top: 1px solid #ebeef5;
-  padding-top: 1rem;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.5rem;
+  background: rgba(248, 250, 252, 0.5);
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
+  padding: 1rem;
+}
+
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  gap: 0.5rem;
+}
+
+.input-wrapper :deep(.el-textarea) {
+  flex: 1;
+}
+
+.input-wrapper :deep(.el-textarea__inner) {
+  border-radius: var(--radius-md);
+  resize: none;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  padding-right: 48px;
+  min-height: 60px !important;
+}
+
+.input-wrapper :deep(.el-textarea__inner:focus) {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.send-btn {
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-light)) !important;
+  border: none !important;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.send-btn:hover {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.4);
+}
+
+.send-btn:active {
+  transform: translateY(0) scale(0.95);
 }
 
 .input-actions {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  gap: 0.5rem;
+  justify-content: space-between;
+  padding: 0 4px;
 }
 
 .token-info {
   color: #909399;
   font-size: 0.8rem;
-  margin-right: auto;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 </style>

@@ -9,22 +9,40 @@
               文档分析仪表盘
             </div>
           </template>
-          <el-input
-            v-model="content"
-            type="textarea"
-            :rows="6"
-            placeholder="粘贴待分析的文档内容..."
-          />
+          <div class="textarea-wrapper">
+            <el-input
+              v-model="content"
+              type="textarea"
+              :rows="6"
+              placeholder="粘贴待分析的文档内容..."
+              resize="none"
+            />
+            <div class="textarea-actions">
+              <el-button text size="small" @click="content = ''">
+                <el-icon><Delete /></el-icon>
+                清空
+              </el-button>
+            </div>
+          </div>
           <div class="action-bar">
-            <el-button type="primary" :loading="analyzing" @click="handleFullAnalysis">
+            <el-button
+              type="primary"
+              size="large"
+              :loading="analyzing"
+              @click="handleFullAnalysis"
+              style="width: 140px"
+            >
               <el-icon><DataAnalysis /></el-icon>
               综合分析
             </el-button>
-            <el-button :loading="ingesting" @click="handleIngest">
+            <el-button
+              :loading="ingesting"
+              @click="handleIngest"
+              style="width: 140px"
+            >
               <el-icon><Upload /></el-icon>
               摄入知识库
             </el-button>
-            <el-button @click="handleClear">清空</el-button>
           </div>
         </el-card>
       </el-col>
@@ -139,7 +157,7 @@ import { ref, computed, nextTick, onBeforeUnmount } from 'vue'
 import { ElMessage } from 'element-plus'
 import {
   Document, DataAnalysis, Upload, Monitor, PriceTag,
-  TrendCharts, Memo, Warning
+  TrendCharts, Memo, Warning, Delete
 } from '@element-plus/icons-vue'
 import * as echarts from 'echarts'
 import 'echarts-wordcloud'
@@ -366,7 +384,7 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .analysis-dashboard {
-  max-width: 1200px;
+  width: 100%;
 }
 
 .section-title {
@@ -380,12 +398,31 @@ onBeforeUnmount(() => {
 
 .input-card, .status-card, .chart-card, .detail-card {
   border: 1px solid #f0f0f0;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  transition: box-shadow var(--transition-normal), transform var(--transition-normal);
+}
+
+.input-card:hover, .status-card:hover, .chart-card:hover, .detail-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
 }
 
 .action-bar {
   margin-top: 12px;
   display: flex;
   gap: 8px;
+}
+
+.action-bar .el-button--primary {
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+  box-shadow: 0 2px 6px rgba(99, 102, 241, 0.3);
+  transition: all var(--transition-fast);
+}
+
+.action-bar .el-button--primary:hover {
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+  transform: translateY(-1px);
 }
 
 .empty-state {
@@ -405,6 +442,15 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+  transition: all var(--transition-fast);
+}
+
+.status-item:hover {
+  background: linear-gradient(135deg, #eef2ff, #e0e7ff);
+  transform: translateX(4px);
 }
 
 .status-item .label {
@@ -431,13 +477,18 @@ onBeforeUnmount(() => {
 }
 
 .summary-content {
-  padding: 12px 16px;
-  background: #f8fafc;
-  border-radius: 8px;
-  border-left: 3px solid #6366f1;
+  padding: 16px;
+  background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+  border-radius: var(--radius-sm);
+  border-left: 3px solid var(--primary-color);
   line-height: 1.8;
   color: #303133;
   font-size: 0.9rem;
+  transition: background var(--transition-fast);
+}
+
+.summary-content:hover {
+  background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
 }
 
 .topics-list {
@@ -449,6 +500,12 @@ onBeforeUnmount(() => {
 
 .topic-tag {
   cursor: default;
+  transition: all var(--transition-fast);
+}
+
+.topic-tag:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
 }
 
 .clauses-list {
@@ -461,9 +518,16 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: flex-start;
   gap: 8px;
-  padding: 8px 12px;
-  background: #f8fafc;
-  border-radius: 6px;
+  padding: 10px 14px;
+  background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+}
+
+.clause-item:hover {
+  background: linear-gradient(135deg, #eef2ff, #e0e7ff);
+  transform: translateX(4px);
+  box-shadow: var(--shadow-sm);
 }
 
 .clause-content {
@@ -475,7 +539,7 @@ onBeforeUnmount(() => {
 .risk-section {
   margin-top: 12px;
   padding-top: 12px;
-  border-top: 1px solid #f0f0f0;
+  border-top: 1px dashed #e5e7eb;
 }
 
 .risk-section h4 {
@@ -488,9 +552,43 @@ onBeforeUnmount(() => {
   font-size: 0.85rem;
   color: #606266;
   line-height: 1.6;
-  padding: 8px 12px;
-  background: #fef2f2;
-  border-radius: 6px;
+  padding: 12px 14px;
+  background: linear-gradient(135deg, #fef2f2, #fee2e2);
+  border-radius: var(--radius-sm);
   border-left: 3px solid #ef4444;
+  transition: background var(--transition-fast);
+}
+
+.risk-section p:hover {
+  background: linear-gradient(135deg, #fee2e2, #fecaca);
+}
+
+.textarea-wrapper {
+  position: relative;
+}
+
+.textarea-wrapper :deep(.el-textarea__inner) {
+  border-radius: var(--radius-md);
+  resize: none;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.textarea-wrapper :deep(.el-textarea__inner:focus) {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.textarea-actions {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  display: flex;
+  gap: 4px;
+  opacity: 0.6;
+  transition: opacity var(--transition-fast);
+}
+
+.textarea-wrapper:hover .textarea-actions {
+  opacity: 1;
 }
 </style>

@@ -11,12 +11,21 @@
           </template>
           <el-form :model="form" label-position="top">
             <el-form-item>
-              <el-input
-                v-model="form.sourceText"
-                type="textarea"
-                :rows="10"
-                placeholder="输入需要改写的文本..."
-              />
+              <div class="textarea-wrapper">
+                <el-input
+                  v-model="form.sourceText"
+                  type="textarea"
+                  :rows="10"
+                  placeholder="输入需要改写的文本..."
+                  resize="none"
+                />
+                <div class="textarea-actions">
+                  <el-button text size="small" @click="form.sourceText = ''">
+                    <el-icon><Delete /></el-icon>
+                    清空
+                  </el-button>
+                </div>
+              </div>
             </el-form-item>
             <el-row :gutter="12">
               <el-col :span="12">
@@ -47,7 +56,13 @@
                 placeholder="例如：保留所有数据引用、不超过200字..."
               />
             </el-form-item>
-            <el-button type="primary" :loading="loading" @click="handleRewrite">
+            <el-button
+              type="primary"
+              size="large"
+              :loading="loading"
+              @click="handleRewrite"
+              style="width: 160px"
+            >
               <el-icon><MagicStick /></el-icon>
               开始改写
             </el-button>
@@ -102,7 +117,7 @@
 <script setup>
 import { ref, reactive, computed } from 'vue'
 import { ElMessage } from 'element-plus'
-import { EditPen, MagicStick, Finished, CopyDocument, List, Check } from '@element-plus/icons-vue'
+import { EditPen, MagicStick, Finished, CopyDocument, List, Check, Delete } from '@element-plus/icons-vue'
 import { rewriteText } from '../api'
 
 const form = reactive({
@@ -152,7 +167,7 @@ async function handleCopy() {
 
 <style scoped>
 .rewrite-page {
-  max-width: 1100px;
+  width: 100%;
 }
 
 .section-title {
@@ -166,6 +181,13 @@ async function handleCopy() {
 
 .input-card, .result-card, .empty-card {
   border: 1px solid #f0f0f0;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  transition: box-shadow var(--transition-normal);
+}
+
+.input-card:hover, .result-card:hover {
+  box-shadow: var(--shadow-md);
 }
 
 .empty-card {
@@ -180,17 +202,27 @@ async function handleCopy() {
 
 .score-tag {
   margin-left: auto;
+  transition: transform var(--transition-fast);
+}
+
+.score-tag:hover {
+  transform: scale(1.05);
 }
 
 .rewrite-result {
   margin-top: 12px;
   padding: 16px;
-  background: #f0fdf4;
-  border-radius: 8px;
-  border-left: 3px solid #10b981;
+  background: linear-gradient(135deg, #f0fdf4, #ecfdf5);
+  border-radius: var(--radius-sm);
+  border-left: 3px solid var(--success-color);
   line-height: 1.8;
   color: #303133;
   font-size: 0.95rem;
+  transition: background var(--transition-fast);
+}
+
+.rewrite-result:hover {
+  background: linear-gradient(135deg, #ecfdf5, #d1fae5);
 }
 
 .result-actions {
@@ -199,11 +231,23 @@ async function handleCopy() {
   justify-content: flex-end;
 }
 
+.result-actions .el-button {
+  transition: all var(--transition-fast);
+}
+
+.result-actions .el-button:hover {
+  transform: translateY(-1px);
+}
+
 .change-summary {
   margin: 12px 0 8px;
   color: #606266;
   font-size: 0.9rem;
   line-height: 1.6;
+  padding: 10px 14px;
+  background: #f8fafc;
+  border-radius: var(--radius-sm);
+  border-left: 3px solid var(--primary-color);
 }
 
 .change-points {
@@ -220,5 +264,42 @@ async function handleCopy() {
   font-size: 0.9rem;
   color: #606266;
   line-height: 1.5;
+  padding: 6px 10px;
+  border-radius: 6px;
+  transition: all var(--transition-fast);
+}
+
+.change-point:hover {
+  background: rgba(99, 102, 241, 0.05);
+  transform: translateX(4px);
+}
+
+.textarea-wrapper {
+  position: relative;
+}
+
+.textarea-wrapper :deep(.el-textarea__inner) {
+  border-radius: var(--radius-md);
+  resize: none;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.textarea-wrapper :deep(.el-textarea__inner:focus) {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.textarea-actions {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  display: flex;
+  gap: 4px;
+  opacity: 0.6;
+  transition: opacity var(--transition-fast);
+}
+
+.textarea-wrapper:hover .textarea-actions {
+  opacity: 1;
 }
 </style>

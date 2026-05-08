@@ -6,6 +6,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.langchain4j.model.chat.ChatLanguageModel;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 /**
@@ -29,10 +30,22 @@ public class TextRewriteService {
 
     private final ChatLanguageModel chatModel;
     private final ObjectMapper objectMapper;
+    private final ChatHistoryService chatHistoryService;
 
-    public TextRewriteService(ChatLanguageModel chatModel, ObjectMapper objectMapper) {
+    @Value("${langchain4j.provider:dashscope}")
+    private String provider;
+
+    @Value("${langchain4j.dashscope.model-name:qwen-plus}")
+    private String dashscopeModelName;
+
+    @Value("${langchain4j.deepseek.model-name:deepseek-chat}")
+    private String deepseekModelName;
+
+    public TextRewriteService(ChatLanguageModel chatModel, ObjectMapper objectMapper,
+                               ChatHistoryService chatHistoryService) {
         this.chatModel = chatModel;
         this.objectMapper = objectMapper;
+        this.chatHistoryService = chatHistoryService;
     }
 
     public TextRewriteResult rewrite(TextRewriteRequest request) {
@@ -41,6 +54,12 @@ public class TextRewriteService {
 
         String rawResponse = chatModel.chat(prompt);
         log.debug("Raw rewrite response: {}", rawResponse);
+
+        int promptTokens = (int) (prompt.length() * 0.7);
+        int completionTokens = (int) (rawResponse.length() * 0.7);
+        String modelName = "deepseek".equalsIgnoreCase(provider) ? deepseekModelName : dashscopeModelName;
+        chatHistoryService.recordTokenUsage(provider, modelName, "text_rewrite",
+                promptTokens, completionTokens, null);
 
         return parseResult(rawResponse);
     }

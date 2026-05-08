@@ -11,12 +11,21 @@
           </template>
           <el-form :model="form" label-position="top">
             <el-form-item>
-              <el-input
-                v-model="form.text"
-                type="textarea"
-                :rows="12"
-                placeholder="粘贴或输入需要提取关键词的文本..."
-              />
+              <div class="textarea-wrapper">
+                <el-input
+                  v-model="form.text"
+                  type="textarea"
+                  :rows="12"
+                  placeholder="粘贴或输入需要提取关键词的文本..."
+                  resize="none"
+                />
+                <div class="textarea-actions">
+                  <el-button text size="small" @click="form.text = ''">
+                    <el-icon><Delete /></el-icon>
+                    清空
+                  </el-button>
+                </div>
+              </div>
             </el-form-item>
             <el-row :gutter="12">
               <el-col :span="8">
@@ -38,7 +47,13 @@
               </el-col>
               <el-col :span="8">
                 <el-form-item label=" ">
-                  <el-button type="primary" :loading="loading" @click="handleExtract" style="width:100%">
+                  <el-button
+                    type="primary"
+                    size="large"
+                    :loading="loading"
+                    @click="handleExtract"
+                    style="width:100%"
+                  >
                     <el-icon><Search /></el-icon>
                     提取关键词
                   </el-button>
@@ -105,7 +120,7 @@
 <script setup>
 import { ref, reactive, computed } from 'vue'
 import { ElMessage } from 'element-plus'
-import { PriceTag, Search, Memo } from '@element-plus/icons-vue'
+import { PriceTag, Search, Memo, Delete } from '@element-plus/icons-vue'
 import { extractKeywords } from '../api'
 
 const form = reactive({
@@ -156,7 +171,7 @@ function getRelevanceColor(relevance) {
 
 <style scoped>
 .keyword-page {
-  max-width: 1100px;
+  width: 100%;
 }
 
 .section-title {
@@ -170,6 +185,13 @@ function getRelevanceColor(relevance) {
 
 .input-card, .result-card, .empty-card {
   border: 1px solid #f0f0f0;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  transition: box-shadow var(--transition-normal);
+}
+
+.input-card:hover, .result-card:hover {
+  box-shadow: var(--shadow-md);
 }
 
 .empty-card {
@@ -188,9 +210,14 @@ function getRelevanceColor(relevance) {
   line-height: 1.7;
   margin: 12px 0 8px;
   padding: 12px 16px;
-  background: #f8fafc;
-  border-radius: 8px;
-  border-left: 3px solid #6366f1;
+  background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+  border-radius: var(--radius-sm);
+  border-left: 3px solid var(--primary-color);
+  transition: background var(--transition-fast);
+}
+
+.topic-text:hover {
+  background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
 }
 
 .sentiment-tag {
@@ -208,14 +235,17 @@ function getRelevanceColor(relevance) {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 8px 12px;
-  background: #f8fafc;
-  border-radius: 8px;
-  transition: background 0.2s;
+  padding: 10px 14px;
+  background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+  cursor: default;
 }
 
 .keyword-item:hover {
-  background: #f0f4ff;
+  background: linear-gradient(135deg, #eef2ff, #e0e7ff);
+  transform: translateX(4px);
+  box-shadow: var(--shadow-sm);
 }
 
 .kw-text {
@@ -227,14 +257,44 @@ function getRelevanceColor(relevance) {
 .kw-category {
   font-size: 0.75rem;
   color: #909399;
-  background: #f0f0f0;
-  padding: 2px 8px;
+  background: white;
+  padding: 2px 10px;
   border-radius: 4px;
   flex-shrink: 0;
+  border: 1px solid #e5e7eb;
 }
 
 .kw-progress {
   flex: 1;
   min-width: 80px;
+}
+
+.textarea-wrapper {
+  position: relative;
+}
+
+.textarea-wrapper :deep(.el-textarea__inner) {
+  border-radius: var(--radius-md);
+  resize: none;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.textarea-wrapper :deep(.el-textarea__inner:focus) {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.textarea-actions {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  display: flex;
+  gap: 4px;
+  opacity: 0.6;
+  transition: opacity var(--transition-fast);
+}
+
+.textarea-wrapper:hover .textarea-actions {
+  opacity: 1;
 }
 </style>

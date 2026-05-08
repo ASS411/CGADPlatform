@@ -11,35 +11,62 @@
 
       <el-form :model="form" label-position="top">
         <el-form-item label="文档内容">
-          <el-input
-            v-model="form.content"
-            type="textarea"
-            :rows="10"
-            placeholder="请粘贴待分析的文档内容..."
-          />
+          <div class="textarea-wrapper">
+            <el-input
+              v-model="form.content"
+              type="textarea"
+              :rows="10"
+              placeholder="请粘贴待分析的文档内容..."
+              resize="none"
+            />
+            <div class="textarea-actions">
+              <el-button text size="small" @click="form.content = ''">
+                <el-icon><Delete /></el-icon>
+                清空
+              </el-button>
+            </div>
+          </div>
         </el-form-item>
 
-        <el-form-item label="文档类型">
-          <el-select v-model="form.documentType" placeholder="选择文档类型（可选）" clearable style="width: 100%">
-            <el-option label="合同" value="合同" />
-            <el-option label="研报" value="研报" />
-            <el-option label="协议" value="协议" />
-            <el-option label="公告" value="公告" />
-            <el-option label="其他" value="其他" />
-          </el-select>
-        </el-form-item>
-
-        <el-form-item label="分析选项">
-          <el-checkbox v-model="form.generateSummary">生成摘要</el-checkbox>
-          <el-checkbox v-model="form.extractKeyClauses">提取关键条款</el-checkbox>
-        </el-form-item>
+        <el-row :gutter="16">
+          <el-col :span="12">
+            <el-form-item label="文档类型">
+              <el-select v-model="form.documentType" placeholder="选择文档类型（可选）" clearable style="width: 100%">
+                <el-option label="合同" value="合同" />
+                <el-option label="研报" value="研报" />
+                <el-option label="协议" value="协议" />
+                <el-option label="公告" value="公告" />
+                <el-option label="其他" value="其他" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="分析选项">
+              <div class="checkbox-group">
+                <el-checkbox v-model="form.generateSummary">生成摘要</el-checkbox>
+                <el-checkbox v-model="form.extractKeyClauses">提取关键条款</el-checkbox>
+              </div>
+            </el-form-item>
+          </el-col>
+        </el-row>
 
         <el-form-item>
-          <el-button type="primary" :loading="analyzing" @click="handleAnalyze">
+          <el-button
+            type="primary"
+            size="large"
+            :loading="analyzing"
+            @click="handleAnalyze"
+            style="width: 160px"
+          >
             <el-icon><MagicStick /></el-icon>
             开始分析
           </el-button>
-          <el-button :loading="exporting" :disabled="!result" @click="handleExportExcel">
+          <el-button
+            :loading="exporting"
+            :disabled="!result"
+            @click="handleExportExcel"
+            style="width: 140px"
+          >
             <el-icon><Download /></el-icon>
             导出 Excel
           </el-button>
@@ -114,7 +141,7 @@
 <script setup>
 import { ref, reactive } from 'vue'
 import { ElMessage } from 'element-plus'
-import { Document, MagicStick, Download, DataAnalysis } from '@element-plus/icons-vue'
+import { Document, MagicStick, Download, DataAnalysis, Delete } from '@element-plus/icons-vue'
 import { analyzeDocument, exportExcel } from '../api'
 
 const form = reactive({
@@ -182,11 +209,17 @@ function getRiskLevel(text) {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-  max-width: 960px;
 }
 
 .document-analyzer :deep(.el-card) {
   border: 1px solid #f0f0f0;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  transition: box-shadow var(--transition-normal);
+}
+
+.document-analyzer :deep(.el-card:hover) {
+  box-shadow: var(--shadow-md);
 }
 
 .card-header {
@@ -212,19 +245,89 @@ function getRiskLevel(text) {
 .result-text {
   line-height: 1.8;
   color: #606266;
-  padding: 1rem;
-  background: #f8fafc;
-  border-radius: 8px;
-  border-left: 3px solid #6366f1;
+  padding: 1.25rem;
+  background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+  border-radius: var(--radius-sm);
+  border-left: 3px solid var(--primary-color);
+  transition: background var(--transition-fast);
+}
+
+.result-text:hover {
+  background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
 }
 
 .json-viewer {
-  background: #1e1e2e;
+  background: linear-gradient(135deg, #1e1e2e, #2a2a3e);
   color: #cdd6f4;
   padding: 1.2rem;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   overflow-x: auto;
   font-size: 0.85rem;
   line-height: 1.6;
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.document-analyzer :deep(.el-tabs__item) {
+  transition: all var(--transition-fast);
+}
+
+.document-analyzer :deep(.el-tabs__item:hover) {
+  color: var(--primary-color);
+}
+
+.document-analyzer :deep(.el-tabs__item.is-active) {
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+.document-analyzer :deep(.el-tabs__active-bar) {
+  background-color: var(--primary-color);
+}
+
+.document-analyzer :deep(.el-table th) {
+  background: #f8fafc;
+  font-weight: 600;
+}
+
+.document-analyzer :deep(.el-timeline-item__node) {
+  background: var(--primary-color) !important;
+  border: 2px solid rgba(99, 102, 241, 0.3) !important;
+}
+
+.textarea-wrapper {
+  position: relative;
+}
+
+.textarea-wrapper :deep(.el-textarea__inner) {
+  border-radius: var(--radius-md);
+  resize: none;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.textarea-wrapper :deep(.el-textarea__inner:focus) {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.textarea-actions {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  display: flex;
+  gap: 4px;
+  opacity: 0.6;
+  transition: opacity var(--transition-fast);
+}
+
+.textarea-wrapper:hover .textarea-actions {
+  opacity: 1;
+}
+
+.checkbox-group {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  height: 32px;
 }
 </style>

@@ -6,18 +6,19 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.langchain4j.model.chat.ChatLanguageModel;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 /**
  * 智能关键词提取服务
  *
- * 【知识点】关键词提取的应用场景：
+ * 关键词提取的应用场景：
  *   - SEO 优化：自动生成网页 meta keywords
  *   - 内容标签：为文章自动打标签，便于分类检索
  *   - 知识图谱：提取实体构建知识关系
  *   - 情感分析：判断文本正负面倾向
  *
- * 【知识点】为什么用大模型做关键词提取而非传统 NLP？
+ * 为什么用大模型做关键词提取而非传统 NLP？
  *   - 传统方法（TF-IDF、TextRank）只能统计词频，不理解语义
  *   - 大模型能理解上下文，提取"隐含主题"而非高频词
  *   - 例如："降本增效" 可能只出现一次，但大模型知道它是核心关键词
@@ -28,10 +29,22 @@ public class KeywordExtractionService {
 
     private final ChatLanguageModel chatModel;
     private final ObjectMapper objectMapper;
+    private final ChatHistoryService chatHistoryService;
 
-    public KeywordExtractionService(ChatLanguageModel chatModel, ObjectMapper objectMapper) {
+    @Value("${langchain4j.provider:dashscope}")
+    private String provider;
+
+    @Value("${langchain4j.dashscope.model-name:qwen-plus}")
+    private String dashscopeModelName;
+
+    @Value("${langchain4j.deepseek.model-name:deepseek-chat}")
+    private String deepseekModelName;
+
+    public KeywordExtractionService(ChatLanguageModel chatModel, ObjectMapper objectMapper,
+                                     ChatHistoryService chatHistoryService) {
         this.chatModel = chatModel;
         this.objectMapper = objectMapper;
+        this.chatHistoryService = chatHistoryService;
     }
 
     public KeywordExtractionResult extract(KeywordExtractionRequest request) {
@@ -40,6 +53,12 @@ public class KeywordExtractionService {
 
         String rawResponse = chatModel.chat(prompt);
         log.debug("Raw keyword extraction response: {}", rawResponse);
+
+        int promptTokens = (int) (prompt.length() * 0.7);
+        int completionTokens = (int) (rawResponse.length() * 0.7);
+        String modelName = "deepseek".equalsIgnoreCase(provider) ? deepseekModelName : dashscopeModelName;
+        chatHistoryService.recordTokenUsage(provider, modelName, "keyword_extraction",
+                promptTokens, completionTokens, null);
 
         return parseResult(rawResponse);
     }
